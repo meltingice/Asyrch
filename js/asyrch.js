@@ -1,24 +1,49 @@
-function asyrch(target){
+function Asyrch(target){
 	this.outputTarget = target;
-	this.engine = new Worker('js/asyrch.worker.js');
+	this.liveTimeout = null;
+	this.engines = {
+		google : new Worker('js/engines/google.asyrch.js')
+	};
 	
 	this.init();
 }
 
-asyrch.prototype.init = function(){
+Asyrch.prototype.init = function(){
 	var that = this;
-	this.engine.onmessage = function(e){
+	
+	var _onmessage = function(e){
 		that.outputResults(e.data);
 	}
-	this.engine.onerror = function(error){
+	var _onerror = function(error){
 		throw error;
 	}
-}
-
-asyrch.prototype.search = function(data){
-	this.engine.postMessage(data);
-}
-
-asyrch.prototype.outputResults = function(result){
 	
+	$.each(this.engines, function(i,val){
+		eval("that.engines."+i+".onmessage = _onmessage;");
+		eval("that.engines."+i+".onerror = _onerror;");
+	});
+}
+
+Asyrch.prototype.search = function(data){
+	$.each(this.engines, function(i,val){
+		val.postMessage(data);
+	});
+}
+
+Asyrch.prototype.outputResults = function(result){
+	$(this.outputTarget).append('<li><a href="'+result.url+'">'+result.title+'</a></li>');
+}
+
+Asyrch.prototype.liveSearch = function(input){
+	if(this.liveTimeout){
+		clearTimeout(this.liveTimeout);
+	}
+	
+	var search = $(input).attr('value');
+	var that = this;
+	
+	this.liveTimeout = setTimeout(function(){
+		that.search(search);
+		$(that.outputTarget).empty();
+	},300);
 }

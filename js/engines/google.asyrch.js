@@ -1,4 +1,4 @@
-importScripts('pollen.js');
+importScripts('../pollen.js');
 
 onmessage = function(e){
 	var search = e.data;
@@ -15,7 +15,7 @@ function doSearch(search){
 
 function googleSearch(search){
 	$.ajax.post({
-		url:"../php/search.php",
+		url:"../../php/search.php",
 		data:"engine=google&query="+search,
 		success:function(data){
 			formatGoogleData(data.json);
@@ -24,8 +24,13 @@ function googleSearch(search){
 }
 
 function formatGoogleData(data){
-	$.each(data.responseData,function(i,val){
-		returnData(val.results);
+	data.responseData.results.forEach(function(data){
+		var content = {
+			url : data.url,
+			title : data.titleNoFormatting
+		};
+		
+		returnData(content);
 	});
 }
 
