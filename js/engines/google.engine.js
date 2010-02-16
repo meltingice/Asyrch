@@ -1,19 +1,10 @@
 importScripts('../pollen.js');
 
-onmessage = function(e){
-	var search = e.data;
-	if(search.length == 0){
-		throw "Empty search queries not allowed";
-	}
-	
-	doSearch(search);
+onmessage = function(search){
+	performSearch(search);
 }
 
-function doSearch(search){
-	googleSearch(search);
-}
-
-function googleSearch(search){
+function performSearch(search){
 	$.ajax.post({
 		url:"../../php/search.php",
 		data:"engine=google&query="+search,

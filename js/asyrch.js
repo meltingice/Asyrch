@@ -1,33 +1,23 @@
 function Asyrch(target){
 	this.outputTarget = target;
 	this.liveTimeout = null;
-	this.engines = {
-		google : new Worker('js/engines/google.asyrch.js')
-	};
+	this.worker = new Worker('js/worker.asyrch.js');
 	
 	this.init();
 }
 
 Asyrch.prototype.init = function(){
 	var that = this;
-	
-	var _onmessage = function(e){
+	this.worker.onmessage = function(e){
 		that.outputResults(e.data);
 	}
-	var _onerror = function(error){
+	this.worker.onerror = function(error){
 		throw error;
 	}
-	
-	$.each(this.engines, function(i,val){
-		eval("that.engines."+i+".onmessage = _onmessage;");
-		eval("that.engines."+i+".onerror = _onerror;");
-	});
 }
 
 Asyrch.prototype.search = function(data){
-	$.each(this.engines, function(i,val){
-		val.postMessage(data);
-	});
+	this.worker.postMessage(data);
 }
 
 Asyrch.prototype.outputResults = function(result){
